@@ -2,6 +2,32 @@ let cols = 25;
 let rows = 25;
 let grid = [];
 let cellSize;
+let startCell = null;
+let endCell = null;
+let placing = "start"; // or "end", or "wall"
+
+class Cell {
+    constructor(i, j) {
+      this.i = i;
+      this.j = j;
+      this.wall = false; // can become true for obstacles
+    }
+  
+    show() {
+        stroke(200);
+      
+        if (this === startCell) {
+          fill(0, 255, 0); // green for start
+        } else if (this === endCell) {
+          fill(255, 0, 0); // red for end
+        } else {
+          fill(this.wall ? 0 : 255); // black for walls, white for normal
+        }
+      
+        rect(this.i * cellSize, this.j * cellSize, cellSize, cellSize);
+      }
+      
+  }
 
 function setup() {
   createCanvas(600, 600);
@@ -23,16 +49,21 @@ function draw() {
   }
 }
 
-class Cell {
-  constructor(i, j) {
-    this.i = i;
-    this.j = j;
-    this.wall = false; // can become true for obstacles
+function mousePressed() {
+    let i = floor(mouseX / cellSize);
+    let j = floor(mouseY / cellSize);
+  
+    if (i >= 0 && i < cols && j >= 0 && j < rows) {
+      let cell = grid[i][j];
+  
+      if (placing === "start" && cell !== endCell) {
+        startCell = cell;
+        placing = "end"; // next click will place end
+      } else if (placing === "end" && cell !== startCell) {
+        endCell = cell;
+        placing = "wall"; 
+      } else if (placing === "wall" && cell !== startCell && cell !== endCell) {
+        cell.wall = !cell.wall;
+      }
+    }
   }
-
-  show() {
-    stroke(200);
-    fill(this.wall ? 0 : 255);
-    rect(this.i * cellSize, this.j * cellSize, cellSize, cellSize);
-  }
-}
