@@ -70,8 +70,17 @@ function mousePressed() {
     }
   }
 
+  let pathfindingInProgress = false;
+  let visitedCells = [];
+  let currentStep = 0;
+  let intervalID;
+  
   function runDijkstra() {
-    if (!startCell || !endCell) return;
+    if (pathfindingInProgress || !startCell || !endCell) return;
+  
+    pathfindingInProgress = true;
+    visitedCells = [];
+    currentStep = 0;
   
     let distances = {};
     let previous = {};
@@ -90,31 +99,44 @@ function mousePressed() {
   
     distances[getKey(startCell)] = 0;
   
-    while (unvisited.length > 0) {
+    function stepThrough() {
+      if (unvisited.length === 0) {
+        pathfindingInProgress = false;
+        console.log("No path found.");
+        return;
+      }
+  
       let current = getMinDistanceCell(unvisited, distances);
-      if (!current) break;
+      visitedCells.push(current); // Keep track of visited cells
   
       if (current === endCell) {
         reconstructPath(previous);
+        pathfindingInProgress = false;
         return;
       }
   
       unvisited = unvisited.filter(c => c !== current);
   
-      let neighbours = getNeighbours(current); 
+      let neighbours = getNeighbours(current);
       for (let neighbour of neighbours) {
         if (!unvisited.includes(neighbour)) continue;
   
         let alt = distances[getKey(current)] + 1;
-  
         if (alt < distances[getKey(neighbour)]) {
           distances[getKey(neighbour)] = alt;
           previous[getKey(neighbour)] = current;
         }
       }
+  
+      currentStep++;
+      redrawGrid();  
+  
+      if (pathfindingInProgress) {
+        intervalID = requestAnimationFrame(stepThrough);
+      }
     }
   
-    console.log("No path found.");
+    stepThrough();
   }  
 
   function getKey(cell) {
@@ -161,7 +183,6 @@ function mousePressed() {
     while (current !== startCell) {
       path.push(current);
       current = previous[getKey(current)];
-  
       if (!current) {
         console.log("Broken path detected.");
         return;
@@ -169,21 +190,66 @@ function mousePressed() {
     }
   
     path.push(startCell);
-    path.reverse();
+    path.reverse(); 
   
-    for (let cell of path) {
-      cell.path = true;
+    let pathIndex = 0;
+  
+    // Animate each step of the final path
+    let interval = setInterval(() => {
+      if (pathIndex < path.length) {
+        let cell = path[pathIndex];
+        cell.path = true;
+        redrawGrid();
+        pathIndex++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 100); 
+  }  
+    
+  function redrawGrid() {
+    background(255); // Clear canvas with white background
+  
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        let cell = grid[i][j];
+        cell.show();
+      }
     }
   
-    redrawGrid();
-  }  
-
-  function redrawGrid() {
-    background(255); // clear canvas with white background
+    for (let i = 0; i < visitedCells.length; i++) {
+      let cell = visitedCells[i];
+      fill(200, 200, 0); // Yellow for visited cells
+      noStroke();
+      rect(cell.i * cellSize, cell.j * cellSize, cellSize, cellSize);
+    }
 
     for (let i = 0; i < cols; i++) {
       for (let j = 0; j < rows; j++) {
-        grid[i][j].show();
+        let cell = grid[i][j];
+        if (cell.path) {
+          fill(0, 0, 255); // Blue for path cells
+          noStroke();
+          rect(cell.i * cellSize, cell.j * cellSize, cellSize, cellSize);
+        }
       }
     }
+  }
+
+  function resetGrid() {
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        let cell = grid[i][j];
+        cell.wall = false;
+        cell.path = false;
+      }
+    }
+  
+    startCell = null;
+    endCell = null;
+    placing = "start";
+    visitedCells = [];
+    pathfindingInProgress = false;
+  
+    redrawGrid();
   }
