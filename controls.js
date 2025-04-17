@@ -1,0 +1,1 @@
+document.getElementById("runBtn").addEventListener("click", runDijkstra);
