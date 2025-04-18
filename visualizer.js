@@ -7,12 +7,14 @@ let endCell = null;
 let placing = "start"; // or "end", or "wall"
 let dragging = false;
 let dragMode = null; 
+let statusMessage = "";
+let statusMessageTimeout = null;
 
 class Cell {
     constructor(i, j) {
       this.i = i;
       this.j = j;
-      this.wall = false; // can become true for obstacles
+      this.wall = false; 
     }
   
     show() {
@@ -50,6 +52,16 @@ function draw() {
     for (let j = 0; j < rows; j++) {
       grid[i][j].show();
     }
+  }
+  
+  if (statusMessage) {
+    textSize(20);
+    textAlign(CENTER, CENTER);
+    fill(255, 0, 0); 
+    stroke(0);
+    strokeWeight(2);
+    text(statusMessage, width / 2, height - 30);
+    noStroke();
   }
 }
 
@@ -101,6 +113,14 @@ function toggleWall(cell) {
   }
 }
 
+function showStatusMessage(message, duration = 3000) {
+  statusMessage = message;
+  clearTimeout(statusMessageTimeout);
+  statusMessageTimeout = setTimeout(() => {
+    statusMessage = "";
+  }, duration);
+}
+
 let pathfindingInProgress = false;
 let visitedCells = [];
 let currentStep = 0;
@@ -112,6 +132,7 @@ function runDijkstra() {
   pathfindingInProgress = true;
   visitedCells = [];
   currentStep = 0;
+  statusMessage = "";
 
   let distances = {};
   let previous = {};
@@ -133,12 +154,20 @@ function runDijkstra() {
   function stepThrough() {
     if (unvisited.length === 0) {
       pathfindingInProgress = false;
+      showStatusMessage("No path found between start and end points!", 5000); 
       console.log("No path found.");
       return;
     }
 
     let current = getMinDistanceCell(unvisited, distances);
-    visitedCells.push(current); // Keep track of visited cells
+
+    if (!current) {
+      pathfindingInProgress = false;
+      showStatusMessage("No path found between start and end points!", 5000);
+      console.log("No path found - no valid cell to process.");
+      return;
+    }
+    visitedCells.push(current); 
 
     if (current === endCell) {
       reconstructPath(previous);
@@ -175,6 +204,8 @@ function getKey(cell) {
 }
 
 function getNeighbours(cell) {
+  if (!cell) return [];
+  
   let neighbours = [];
   let {i, j} = cell;
 
@@ -207,6 +238,7 @@ function reconstructPath(previous) {
   let current = endCell;
 
   if (!previous[getKey(current)]) {
+    showStatusMessage("No path found between start and end points!", 5000);
     console.log("No path found.");
     return;
   }
@@ -215,6 +247,7 @@ function reconstructPath(previous) {
     path.push(current);
     current = previous[getKey(current)];
     if (!current) {
+      showStatusMessage("Broken path detected, try repositioning points.", 5000);
       console.log("Broken path detected.");
       return;
     }
@@ -296,7 +329,7 @@ function randomiseGrid() {
   do {
     endI = floor(random(cols));
     endJ = floor(random(rows));
-  } while (endI === startI && endJ === startJ); // ensure they're different
+  } while (endI === startI && endJ === startJ); 
 
   endCell = grid[endI][endJ];
 
@@ -321,6 +354,7 @@ function runAStar() {
   pathfindingInProgress = true;
   visitedCells = []; 
   currentStep = 0;
+  statusMessage = "";
   
   let openSet = [];
   let cameFrom = {};
@@ -342,6 +376,7 @@ function runAStar() {
 
   function stepThrough() {
     if (openSet.length === 0) {
+      showStatusMessage("No path found between start and end points!", 5000);
       console.log("No path found.");
       pathfindingInProgress = false;
       return;
@@ -350,6 +385,13 @@ function runAStar() {
     let current = openSet.reduce((a, b) =>
       fScore[getKey(a)] < fScore[getKey(b)] ? a : b
     );
+
+    if (!current) {
+      showStatusMessage("No path found between start and end points!", 5000);
+      console.log("No path found - no valid cell to process.");
+      pathfindingInProgress = false;
+      return;
+    }
 
     visitedCells.push(current);
     redrawGrid();
