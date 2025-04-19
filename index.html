@@ -1,24 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Pathfinding Visualizer</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <main></main>
-    <div style="text-align: center; margin: 20px;">
-        <button id="runBtn">Run Dijkstra's</button>
-        <button id="runAStarBtn">Run A*</button>
-        <button id="runFloydBtn">Run Floyd-Warshall</button>
-        <button id="resetBtn">Reset</button>
-        <button id="randomBtn">Randomise</button>
-    </div>      
-    <script src="grid.js"></script>
-    <script src="dijkstra.js"></script>
-    <script src="astar.js"></script>
-    <script src="floydwarshall.js"></script>
-    <script src="controls.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <title>Pathfinding Visualizer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect fill='%231a1a1a' width='16' height='16'/><rect fill='%234a6fa5' x='2' y='2' width='4' height='4'/><rect fill='%234a6fa5' x='6' y='6' width='4' height='4'/><rect fill='%234a6fa5' x='10' y='10' width='4' height='4'/></svg>">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="retro-container">
+    <h1 class="retro-title">PATHFINDER<span class="blink">_</span></h1>
+    
+    <div class="controls-panel">
+      <div class="button-column">
+        <button id="runBtn" class="retro-btn green-btn">Dijkstra's</button>
+        <button id="runAStarBtn" class="retro-btn blue-btn">A* Search</button>
+        <button id="runFloydBtn" class="retro-btn purple-btn">Floyd-Warshall</button>
+      </div>
+      <div class="button-column">
+        <button id="randomBtn" class="retro-btn yellow-btn">Random Maze</button>
+        <button id="resetBtn" class="retro-btn red-btn">Reset Grid</button>
+      </div>
+    </div>
+    
+    <div id="grid-container"></div>
+    
+    <div class="retro-footer">
+      <div class="legend">
+        <div class="legend-item"><span class="legend-color start"></span>Start</div>
+        <div class="legend-item"><span class="legend-color end"></span>End</div>
+        <div class="legend-item"><span class="legend-color wall"></span>Wall</div>
+        <div class="legend-item"><span class="legend-color path"></span>Path</div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="grid.js"></script>
+  <script src="dijkstra.js"></script>
+  <script src="astar.js"></script>
+  <script src="floydwarshall.js"></script>
+  <script src="controls.js"></script>
+</body>
 </html>
